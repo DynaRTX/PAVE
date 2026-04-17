@@ -1,23 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAVE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            /* Sleek, premium dark mode colors (Zinc/Tailwind inspired) */
+            /* Light theme (default) */
+            --bg-color: #f4f7f6;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --primary-accent: #009FB7;
+            --secondary-accent: #00644B;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --text-main: #1f2937;
+            --text-muted: #1f2937;
+
+            --input-bg-default: rgba(0, 0, 0, 0.05);
+            --input-border-default: rgba(0, 0, 0, 0.1);
+            --input-bg-focus: rgba(0, 0, 0, 0.02);
+
+            --btn-border: rgba(0, 0, 0, 0.2);
+            --btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+            --stat-bar-bg: rgba(0, 0, 0, 0.05);
+
+            --table-border: rgba(0, 0, 0, 0.05);
+            --table-hover: rgba(0, 0, 0, 0.03);
+
+            --gradient-1: rgba(0, 159, 183, 0.08);
+            --gradient-2: rgba(0, 100, 75, 0.08);
+
+            --status-played-bg: rgba(5, 150, 105, 0.15);
+        }
+
+        :root[data-theme="dark"] {
+            /* Original dark theme */
             --bg-color: #09090b;
             --card-bg: rgba(24, 24, 27, 0.65);
             --card-border: rgba(255, 255, 255, 0.08);
-            --primary-accent: #3b82f6; /* sophisticated blue */
-            --success-color: #10b981; /* emerald */
-            --warning-color: #f59e0b; /* amber */
-            --danger-color: #ef4444; /* red */
+            --primary-accent: #3b82f6;
+            --secondary-accent: #10b981;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
             --text-main: #f4f4f5;
             --text-muted: #a1a1aa;
+
+            --input-bg-default: rgba(0, 0, 0, 0.3);
+            --input-border-default: rgba(255, 255, 255, 0.1);
+            --input-bg-focus: rgba(0, 0, 0, 0.5);
+
+            --btn-border: rgba(255, 255, 255, 0.2);
+            --btn-hover-bg: rgba(255, 255, 255, 0.05);
+
+            --stat-bar-bg: rgba(255, 255, 255, 0.05);
+
+            --table-border: rgba(255, 255, 255, 0.03);
+            --table-hover: rgba(255, 255, 255, 0.03);
+
+            --gradient-1: rgba(59, 130, 246, 0.05);
+            --gradient-2: rgba(139, 92, 246, 0.05);
+
+            --status-played-bg: rgba(16, 185, 129, 0.15);
         }
 
         * {
@@ -28,9 +80,9 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.05), transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.05), transparent 40%);
+            background-image:
+                radial-gradient(circle at 10% 10%, var(--gradient-1), transparent 40%),
+                radial-gradient(circle at 90% 90%, var(--gradient-2), transparent 40%);
             color: var(--text-main);
             font-family: 'Rajdhani', sans-serif;
             min-height: 100vh;
@@ -39,7 +91,12 @@
             flex-direction: column;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Orbitron', sans-serif;
             font-weight: 500;
         }
@@ -100,10 +157,10 @@
         .input-field {
             width: 100%;
             padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--input-bg-default);
+            border: 1px solid var(--input-border-default);
             border-radius: 8px;
-            color: white;
+            color: var(--text-main);
             font-family: 'Rajdhani', sans-serif;
             font-size: 1.1rem;
             outline: none;
@@ -112,7 +169,7 @@
 
         .input-field:focus {
             border-color: var(--primary-accent);
-            background: rgba(0, 0, 0, 0.5);
+            background: var(--input-bg-focus);
         }
 
         .login-btn {
@@ -136,7 +193,7 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        
+
         #login-error {
             color: var(--danger-color);
             margin-top: 15px;
@@ -149,7 +206,10 @@
         /* Greeting Overlay */
         #greeting-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -161,10 +221,10 @@
 
         .greeting-text {
             font-size: 3rem;
-            color: white;
+            color: var(--text-main);
             transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        
+
         .greeting-text span {
             color: var(--primary-accent);
         }
@@ -225,7 +285,7 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .role-badge {
             background-color: rgba(59, 130, 246, 0.15);
             color: var(--primary-accent);
@@ -239,7 +299,7 @@
 
         .logout-btn {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--btn-border);
             color: var(--text-muted);
             padding: 8px 16px;
             border-radius: 6px;
@@ -251,9 +311,28 @@
         }
 
         .logout-btn:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--secondary-accent);
+            color: var(--secondary-accent);
+            background: var(--btn-hover-bg);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--btn-border);
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-accent);
+            border-color: var(--primary-accent);
+            background: var(--btn-hover-bg);
         }
 
         /* Grid Layout */
@@ -309,7 +388,7 @@
             color: var(--primary-accent);
             margin-bottom: 16px;
         }
-        
+
         .pa-btn {
             width: 100%;
             padding: 12px;
@@ -339,16 +418,24 @@
         }
 
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
 
         /* Upload progress bar */
         .stat-bar-bg {
             width: 100%;
             height: 6px;
-            background: rgba(255,255,255,0.05);
+            background: var(--stat-bar-bg);
             border-radius: 3px;
             overflow: hidden;
             display: flex;
@@ -360,7 +447,10 @@
             transition: width 0.5s ease;
         }
 
-        .up-fill { background: var(--primary-accent); width: 0%; }
+        .up-fill {
+            background: var(--primary-accent);
+            width: 0%;
+        }
 
         /* Recordings Table */
         .recordings-table-wrap {
@@ -390,12 +480,12 @@
         .recordings-table tbody td {
             padding: 12px 16px;
             color: var(--text-main);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--table-border);
             white-space: nowrap;
         }
 
         .recordings-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--table-hover);
         }
 
         .status-badge {
@@ -407,7 +497,7 @@
         }
 
         .status-badge.played {
-            background: rgba(16, 185, 129, 0.15);
+            background: var(--status-played-bg);
             color: var(--success-color);
         }
 
@@ -449,34 +539,42 @@
                 gap: 15px;
                 padding: 16px;
             }
-            .nav-brand, .nav-center, .nav-right {
+
+            .nav-brand,
+            .nav-center,
+            .nav-right {
                 width: 100%;
                 text-align: center;
                 justify-content: center;
             }
+
             .dashboard-grid {
                 grid-template-columns: 1fr;
                 gap: 16px;
             }
+
             .dash-card {
                 padding: 16px;
             }
+
             .greeting-text {
                 font-size: 2rem;
                 text-align: center;
             }
+
             .greeting-text.shrink {
                 transform: translateY(-30vh) scale(0.6);
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Login Screen -->
     <div id="login-screen">
         <div class="login-container glass-card">
-            <h1 class="login-title">SYSTEM ACCESS</h1>
+            <h1 class="login-title">Vidya Valley PAVE</h1>
             <form id="login-form">
                 <div class="input-group">
                     <label for="username">USERNAME</label>
@@ -500,9 +598,29 @@
     <!-- Dashboard Screen -->
     <div id="dashboard-screen">
         <nav class="navbar glass-card">
-            <div class="nav-brand">PAVE</div>
+            <div class="nav-brand">Vidya Valley PAVE</div>
             <div class="nav-center" id="nav-greeting"></div>
             <div class="nav-right">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <!-- Sun icon shown in light mode -->
+                    <svg id="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" x2="12" y1="1" y2="3" />
+                        <line x1="12" x2="12" y1="21" y2="23" />
+                        <line x1="4.22" x2="5.64" y1="4.22" y2="5.64" />
+                        <line x1="18.36" x2="19.78" y1="18.36" y2="19.78" />
+                        <line x1="1" x2="3" y1="12" y2="12" />
+                        <line x1="21" x2="23" y1="12" y2="12" />
+                        <line x1="4.22" x2="5.64" y1="19.78" y2="18.36" />
+                        <line x1="18.36" x2="19.78" y1="5.64" y2="4.22" />
+                    </svg>
+                    <!-- Moon icon shown in dark mode -->
+                    <svg id="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
                 <div class="user-display">
                     <span id="user-display"></span>
                     <span id="role-badge" class="role-badge"></span>
@@ -520,30 +638,53 @@
                 <div class="dash-card glass-card" id="pa-card">
                     <h3 class="card-title">PA System Control</h3>
                     <div class="pa-icon-container">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
                         </svg>
                     </div>
-                    <div id="pa-status" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready to record</div>
-                    <audio id="audio-preview" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;" controls></audio>
-                    <button class="pa-btn" id="upload-supabase-btn" style="display:none; margin-bottom: 10px; background: var(--success-color);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <div id="pa-status" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready
+                        to record</div>
+                    <audio id="audio-preview" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;"
+                        controls></audio>
+                    <button class="pa-btn" id="upload-supabase-btn"
+                        style="display:none; margin-bottom: 10px; background: var(--secondary-accent);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" x2="12" y1="3" y2="15" />
+                        </svg>
                         PLAY ON PA SYSTEM
                     </button>
                     <button class="pa-btn" id="record-btn" style="margin-bottom: 10px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" x2="12" y1="19" y2="22" />
+                        </svg>
                         START RECORDING
                     </button>
                     <input type="file" id="file-input" accept="audio/*" style="display:none;">
-                    <button class="pa-btn" id="file-upload-btn" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                    <button class="pa-btn" id="file-upload-btn"
+                        style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-main);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                            <polyline points="13 2 13 9 20 9" />
+                        </svg>
                         OR UPLOAD A FILE
                     </button>
                     <div id="upload-progress" style="display:none; width:100%; margin-top:15px;">
-                        <div class="stat-bar-bg" style="height:8px;"><div class="stat-bar-fill up-fill" id="upload-bar" style="width:0%; transition: width 0.5s ease;"></div></div>
-                        <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;" id="upload-status-text"></div>
+                        <div class="stat-bar-bg" style="height:8px;">
+                            <div class="stat-bar-fill up-fill" id="upload-bar"
+                                style="width:0%; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"
+                            id="upload-status-text"></div>
                     </div>
                 </div>
 
@@ -552,7 +693,13 @@
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                         <h3 class="card-title" style="margin-bottom:0;">Recording Log</h3>
                         <button class="refresh-btn" id="refresh-recordings-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                                <path d="M21 2v6h-6" />
+                                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                                <path d="M3 22v-6h6" />
+                                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                            </svg>
                             Refresh
                         </button>
                     </div>
@@ -567,7 +714,9 @@
                                 </tr>
                             </thead>
                             <tbody id="recordings-tbody">
-                                <tr><td colspan="4" class="recordings-empty">Loading...</td></tr>
+                                <tr>
+                                    <td colspan="4" class="recordings-empty">Loading...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -578,36 +727,84 @@
             <div class="dash-card glass-card" id="pa-card-user" style="display:none;">
                 <h3 class="card-title">PA System Control</h3>
                 <div class="pa-icon-container">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
                     </svg>
                 </div>
-                <div id="pa-status-user" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready to record</div>
-                <audio id="audio-preview-user" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;" controls></audio>
-                <button class="pa-btn" id="upload-supabase-btn-user" style="display:none; margin-bottom: 10px; background: var(--success-color);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <div id="pa-status-user" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready
+                    to record</div>
+                <audio id="audio-preview-user" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;"
+                    controls></audio>
+                <button class="pa-btn" id="upload-supabase-btn-user"
+                    style="display:none; margin-bottom: 10px; background: var(--secondary-accent);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" x2="12" y1="3" y2="15" />
+                    </svg>
                     PLAY ON PA SYSTEM
                 </button>
                 <button class="pa-btn" id="record-btn-user" style="margin-bottom: 10px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" x2="12" y1="19" y2="22" />
+                    </svg>
                     START RECORDING
                 </button>
                 <input type="file" id="file-input-user" accept="audio/*" style="display:none;">
-                <button class="pa-btn" id="file-upload-btn-user" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                <button class="pa-btn" id="file-upload-btn-user"
+                    style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-main);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                    </svg>
                     OR UPLOAD A FILE
                 </button>
                 <div id="upload-progress-user" style="display:none; width:100%; margin-top:15px;">
-                    <div class="stat-bar-bg" style="height:8px;"><div class="stat-bar-fill up-fill" id="upload-bar-user" style="width:0%; transition: width 0.5s ease;"></div></div>
-                    <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;" id="upload-status-text-user"></div>
+                    <div class="stat-bar-bg" style="height:8px;">
+                        <div class="stat-bar-fill up-fill" id="upload-bar-user"
+                            style="width:0%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"
+                        id="upload-status-text-user"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- Theme Management ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                themeIconLight.style.display = 'none';
+                themeIconDark.style.display = 'block';
+                localStorage.setItem('pave-theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIconLight.style.display = 'block';
+                themeIconDark.style.display = 'none';
+                localStorage.setItem('pave-theme', 'dark');
+            }
+        });
+
+        // Initialize based on localStorage
+        const savedTheme = localStorage.getItem('pave-theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeIconLight.style.display = 'block';
+            themeIconDark.style.display = 'none';
+        }
+
         // --- Initialization and Elements ---
         const loginScreen = document.getElementById('login-screen');
         const dashboardScreen = document.getElementById('dashboard-screen');
@@ -685,13 +882,13 @@
                 recordBtn.disabled = true; uploadBtn.disabled = true; fileUploadBtn.disabled = true;
 
                 const now = new Date();
-                const dStr = now.getFullYear().toString() + 
-                             String(now.getMonth()+1).padStart(2,'0') + 
-                             String(now.getDate()).padStart(2,'0') + '_' + 
-                             String(now.getHours()).padStart(2,'0') + 
-                             String(now.getMinutes()).padStart(2,'0') + 
-                             String(now.getSeconds()).padStart(2,'0');
-                
+                const dStr = now.getFullYear().toString() +
+                    String(now.getMonth() + 1).padStart(2, '0') +
+                    String(now.getDate()).padStart(2, '0') + '_' +
+                    String(now.getHours()).padStart(2, '0') +
+                    String(now.getMinutes()).padStart(2, '0') +
+                    String(now.getSeconds()).padStart(2, '0');
+
                 const initials = window.currentUserInitials || 'UNK';
                 let ext = originalName.includes('.') ? originalName.substring(originalName.lastIndexOf('.')) : '.webm';
                 let newFileName = `${initials}_${dStr}${ext}`;
@@ -743,17 +940,19 @@
                 }, 4000);
             }
 
-            return { reset() {
-                if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-                recordBtn.classList.remove('active');
-                recordBtn.innerHTML = `
+            return {
+                reset() {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+                    recordBtn.classList.remove('active');
+                    recordBtn.innerHTML = `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
                     START RECORDING
                 `;
-                audioPreview.style.display = 'none'; uploadBtn.style.display = 'none';
-                paStatus.textContent = 'Ready to record'; paStatus.style.color = 'var(--text-muted)';
-                recordedBlob = null;
-            }};
+                    audioPreview.style.display = 'none'; uploadBtn.style.display = 'none';
+                    paStatus.textContent = 'Ready to record'; paStatus.style.color = 'var(--text-muted)';
+                    recordedBlob = null;
+                }
+            };
         }
 
         // Wire up admin PA card
@@ -847,10 +1046,10 @@
             errorDiv.textContent = "";
 
             let usersData = null;
-            
+
             try {
                 const res = await fetch('users.json');
-                if(res.ok) {
+                if (res.ok) {
                     usersData = await res.json();
                 } else {
                     throw new Error("HTTP error " + res.status);
@@ -863,7 +1062,7 @@
 
             const user = usersData.users.find(x => x.username === u && x.password === p);
 
-            if(user) {
+            if (user) {
                 showDashboard(user);
             } else {
                 errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
@@ -875,10 +1074,10 @@
             window.currentUserInitials = user.initials || 'XX';
             userDisplay.textContent = user.display_name;
             roleBadge.textContent = user.role;
-            
+
             // Adjust card visibility based on role
             const adminCards = document.querySelectorAll('.admin-only');
-            
+
             if (user.role === 'admin') {
                 adminCards.forEach(card => card.style.display = 'grid');
                 roleBadge.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
@@ -895,30 +1094,30 @@
             const welcomeMsgHTML = `Welcome, <span>${user.display_name}</span>`;
             greetingText.innerHTML = welcomeMsgHTML;
             navGreeting.innerHTML = welcomeMsgHTML;
-            
+
             loginScreen.style.opacity = '0';
             setTimeout(() => {
                 loginScreen.style.display = 'none';
-                
+
                 greetingOverlay.style.opacity = '1';
                 setTimeout(() => {
                     greetingText.classList.add('shrink');
-                    
+
                     setTimeout(() => {
                         greetingOverlay.style.display = 'none';
                         navGreeting.style.opacity = '1';
                     }, 1000);
-                    
+
                     dashboardScreen.style.display = 'flex';
                     void dashboardScreen.offsetWidth;
                     dashboardScreen.style.opacity = '1';
-                    
+
                     if (user.role === 'admin') {
                         startRecordingsPolling();
                     }
-                    
+
                 }, 2000);
-                
+
             }, 500);
         }
 
@@ -938,7 +1137,7 @@
                 dashboardScreen.style.display = 'none';
                 greetingOverlay.style.display = 'flex';
                 greetingOverlay.style.opacity = '0';
-                
+
                 loginScreen.style.display = 'flex';
                 void loginScreen.offsetWidth;
                 loginScreen.style.opacity = '1';
@@ -951,4 +1150,5 @@
 
     </script>
 </body>
+
 </html>
