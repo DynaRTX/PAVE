@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAVE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            /* Sleek, premium dark mode colors (Zinc/Tailwind inspired) */
+            --bg-color: #09090b;
+            --card-bg: rgba(24, 24, 27, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #3b82f6; /* sophisticated blue */
+            --success-color: #10b981; /* emerald */
+            --warning-color: #f59e0b; /* amber */
+            --danger-color: #ef4444; /* red */
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.05), transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.05), transparent 40%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+        }
+
+        /* Glassmorphism Utilities - Much cleaner, professional */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+            background-color: var(--bg-color);
+        }
+
+        .login-container {
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-title {
+            color: var(--primary-accent);
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-accent);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        #login-error {
+            color: var(--danger-color);
+            margin-top: 15px;
+            min-height: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Greeting Overlay */
+        #greeting-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 900;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .greeting-text {
+            font-size: 3rem;
+            color: white;
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .greeting-text span {
+            color: var(--primary-accent);
+        }
+
+        .greeting-text.shrink {
+            transform: translateY(-45vh) scale(0.4);
+            opacity: 1;
+        }
+
+        /* Dashboard Main Layout */
+        #dashboard-screen {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 24px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            margin-bottom: 30px;
+        }
+
+        .nav-brand {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            width: 30%;
+        }
+
+        .nav-center {
+            width: 40%;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .nav-right {
+            width: 30%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-display {
+            font-size: 1rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .role-badge {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-accent);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        /* Admin: PA card + recording log side by side */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dash-card {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            align-self: flex-start;
+        }
+
+        /* PA System Status */
+        .pa-icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-accent);
+            margin-bottom: 16px;
+        }
+        
+        .pa-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pa-btn:hover {
+            opacity: 0.9;
+        }
+
+        .pa-btn.active {
+            background: var(--danger-color);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Upload progress bar */
+        .stat-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .up-fill { background: var(--primary-accent); width: 0%; }
+
+        /* Recordings Table */
+        .recordings-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .recordings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .recordings-table thead th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        .recordings-table tbody td {
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+        }
+
+        .recordings-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.played {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-color);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning-color);
+        }
+
+        .recordings-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 16px;
+            }
+            .nav-brand, .nav-center, .nav-right {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .dash-card {
+                padding: 16px;
+            }
+            .greeting-text {
+                font-size: 2rem;
+                text-align: center;
+            }
+            .greeting-text.shrink {
+                transform: translateY(-30vh) scale(0.6);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-container glass-card">
+            <h1 class="login-title">SYSTEM ACCESS</h1>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">USERNAME</label>
+                    <input type="text" id="username" class="input-field" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="password">PASSWORD</label>
+                    <input type="password" id="password" class="input-field" required>
+                </div>
+                <button type="submit" class="login-btn">Authenticate</button>
+                <div id="login-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Greeting Overlay -->
+    <div id="greeting-overlay">
+        <h1 class="greeting-text" id="greeting-text"></h1>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen">
+        <nav class="navbar glass-card">
+            <div class="nav-brand">PAVE</div>
+            <div class="nav-center" id="nav-greeting"></div>
+            <div class="nav-right">
+                <div class="user-display">
+                    <span id="user-display"></span>
+                    <span id="role-badge" class="role-badge"></span>
+                </div>
+                <button class="logout-btn" id="logout-btn">DISCONNECT</button>
+            </div>
+        </nav>
+
+        <div class="dashboard-grid">
+
+            <!-- Admin: PA card + Recording Log side by side -->
+            <div class="admin-grid admin-only" style="align-items: stretch;">
+
+                <!-- PA System Card -->
+                <div class="dash-card glass-card" id="pa-card">
+                    <h3 class="card-title">PA System Control</h3>
+                    <div class="pa-icon-container">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                    </div>
+                    <div id="pa-status" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready to record</div>
+                    <audio id="audio-preview" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;" controls></audio>
+                    <button class="pa-btn" id="upload-supabase-btn" style="display:none; margin-bottom: 10px; background: var(--success-color);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        PLAY ON PA SYSTEM
+                    </button>
+                    <button class="pa-btn" id="record-btn" style="margin-bottom: 10px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        START RECORDING
+                    </button>
+                    <input type="file" id="file-input" accept="audio/*" style="display:none;">
+                    <button class="pa-btn" id="file-upload-btn" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                        OR UPLOAD A FILE
+                    </button>
+                    <div id="upload-progress" style="display:none; width:100%; margin-top:15px;">
+                        <div class="stat-bar-bg" style="height:8px;"><div class="stat-bar-fill up-fill" id="upload-bar" style="width:0%; transition: width 0.5s ease;"></div></div>
+                        <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;" id="upload-status-text"></div>
+                    </div>
+                </div>
+
+                <!-- Recordings Log -->
+                <div class="dash-card glass-card" style="align-items: stretch;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                        <h3 class="card-title" style="margin-bottom:0;">Recording Log</h3>
+                        <button class="refresh-btn" id="refresh-recordings-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="recordings-table-wrap">
+                        <table class="recordings-table">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordings-tbody">
+                                <tr><td colspan="4" class="recordings-empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PA System Card (user-only, no recording log) -->
+            <div class="dash-card glass-card" id="pa-card-user" style="display:none;">
+                <h3 class="card-title">PA System Control</h3>
+                <div class="pa-icon-container">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                </div>
+                <div id="pa-status-user" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ready to record</div>
+                <audio id="audio-preview-user" style="display:none; width:100%; margin-bottom:15px; border-radius:8px;" controls></audio>
+                <button class="pa-btn" id="upload-supabase-btn-user" style="display:none; margin-bottom: 10px; background: var(--success-color);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    PLAY ON PA SYSTEM
+                </button>
+                <button class="pa-btn" id="record-btn-user" style="margin-bottom: 10px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    START RECORDING
+                </button>
+                <input type="file" id="file-input-user" accept="audio/*" style="display:none;">
+                <button class="pa-btn" id="file-upload-btn-user" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                    OR UPLOAD A FILE
+                </button>
+                <div id="upload-progress-user" style="display:none; width:100%; margin-top:15px;">
+                    <div class="stat-bar-bg" style="height:8px;"><div class="stat-bar-fill up-fill" id="upload-bar-user" style="width:0%; transition: width 0.5s ease;"></div></div>
+                    <div style="text-align:center; margin-top:8px; color:var(--text-muted); font-size:0.85rem;" id="upload-status-text-user"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Initialization and Elements ---
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginForm = document.getElementById('login-form');
+        const greetingOverlay = document.getElementById('greeting-overlay');
+        const greetingText = document.getElementById('greeting-text');
+        const navGreeting = document.getElementById('nav-greeting');
+        const userDisplay = document.getElementById('user-display');
+        const roleBadge = document.getElementById('role-badge');
+        const errorDiv = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        // --- Supabase Init ---
+        const SUPABASE_URL = 'https://nkmwgxrkxbabzcqsgohu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbXdneHJreGJhYnpjcXNnb2h1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NDU3MTEsImV4cCI6MjA5MTQyMTcxMX0.t_MLCovIEfHSCO9pUEgmxrW5rXQnwfrhiLQqUP8H2VM';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // PA elements — a helper so we wire up both admin and user cards identically
+        function wireUpPaCard({ recordBtn, uploadBtn, fileInput, fileUploadBtn, audioPreview, paStatus, uploadProgress, uploadBar, uploadStatusText }) {
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recordedBlob = null;
+
+            recordBtn.addEventListener('click', async () => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    recordBtn.classList.remove('active');
+                    recordBtn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        RECORD AGAIN
+                    `;
+                    paStatus.textContent = 'Processing...';
+                } else {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        audioChunks = [];
+                        mediaRecorder = new MediaRecorder(stream);
+                        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+                        mediaRecorder.onstop = () => {
+                            recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            audioPreview.src = URL.createObjectURL(recordedBlob);
+                            audioPreview.style.display = 'block';
+                            uploadBtn.style.display = 'flex';
+                            paStatus.textContent = 'Recording ready \u2014 preview or upload';
+                            paStatus.style.color = 'var(--success-color)';
+                            stream.getTracks().forEach(t => t.stop());
+                        };
+                        mediaRecorder.start();
+                        recordBtn.classList.add('active');
+                        recordBtn.innerHTML = `
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                            STOP RECORDING
+                        `;
+                        paStatus.textContent = 'Recording in progress...';
+                        paStatus.style.color = 'var(--danger-color)';
+                        audioPreview.style.display = 'none';
+                        uploadBtn.style.display = 'none';
+                    } catch (err) {
+                        paStatus.textContent = 'Microphone access denied';
+                        paStatus.style.color = 'var(--danger-color)';
+                    }
+                }
+            });
+
+            uploadBtn.addEventListener('click', () => { if (recordedBlob) doUpload(recordedBlob, 'recording.webm'); });
+            fileUploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) doUpload(f, f.name); });
+
+            async function doUpload(blob, originalName) {
+                uploadProgress.style.display = 'block';
+                uploadBar.style.width = '30%';
+                uploadBar.style.background = '';
+                uploadStatusText.textContent = 'Uploading to cloud...';
+                paStatus.textContent = 'Uploading...';
+                paStatus.style.color = 'var(--primary-accent)';
+                recordBtn.disabled = true; uploadBtn.disabled = true; fileUploadBtn.disabled = true;
+
+                const storagePath = Date.now() + '_' + originalName;
+                const { error: storageError } = await supabaseClient.storage
+                    .from('recordings').upload(storagePath, blob, { contentType: blob.type });
+
+                if (storageError) {
+                    uploadBar.style.width = '100%'; uploadBar.style.background = 'var(--danger-color)';
+                    uploadStatusText.textContent = 'Upload failed: ' + storageError.message;
+                    paStatus.textContent = 'Upload failed'; paStatus.style.color = 'var(--danger-color)';
+                    recordBtn.disabled = false; uploadBtn.disabled = false; fileUploadBtn.disabled = false;
+                    return;
+                }
+                uploadBar.style.width = '70%'; uploadStatusText.textContent = 'Saving metadata...';
+
+                const userName = document.getElementById('user-display').textContent || 'unknown';
+                const { error: dbError } = await supabaseClient.from('recordings').insert({
+                    filename: originalName, uploaded_by: userName, storage_path: storagePath, downloaded: false
+                });
+
+                if (dbError) {
+                    uploadBar.style.width = '100%'; uploadBar.style.background = 'var(--danger-color)';
+                    uploadStatusText.textContent = 'Metadata failed: ' + dbError.message;
+                    paStatus.textContent = 'Partial failure'; paStatus.style.color = 'var(--warning-color)';
+                    recordBtn.disabled = false; uploadBtn.disabled = false; fileUploadBtn.disabled = false;
+                    return;
+                }
+
+                uploadBar.style.width = '100%'; uploadBar.style.background = 'var(--success-color)';
+                uploadStatusText.textContent = 'Upload complete! Recording sent to PA system.';
+                paStatus.textContent = 'Upload successful \u2713'; paStatus.style.color = 'var(--success-color)';
+                loadRecordings();
+
+                setTimeout(() => {
+                    uploadProgress.style.display = 'none';
+                    uploadBar.style.width = '0%'; uploadBar.style.background = '';
+                    audioPreview.style.display = 'none'; uploadBtn.style.display = 'none';
+                    paStatus.textContent = 'Ready to record'; paStatus.style.color = 'var(--text-muted)';
+                    recordedBlob = null;
+                    recordBtn.disabled = false; uploadBtn.disabled = false; fileUploadBtn.disabled = false;
+                    fileInput.value = '';
+                    // Reset button to START RECORDING
+                    recordBtn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        START RECORDING
+                    `;
+                }, 4000);
+            }
+
+            return { reset() {
+                if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+                recordBtn.classList.remove('active');
+                recordBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    START RECORDING
+                `;
+                audioPreview.style.display = 'none'; uploadBtn.style.display = 'none';
+                paStatus.textContent = 'Ready to record'; paStatus.style.color = 'var(--text-muted)';
+                recordedBlob = null;
+            }};
+        }
+
+        // Wire up admin PA card
+        const adminPa = wireUpPaCard({
+            recordBtn: document.getElementById('record-btn'),
+            uploadBtn: document.getElementById('upload-supabase-btn'),
+            fileInput: document.getElementById('file-input'),
+            fileUploadBtn: document.getElementById('file-upload-btn'),
+            audioPreview: document.getElementById('audio-preview'),
+            paStatus: document.getElementById('pa-status'),
+            uploadProgress: document.getElementById('upload-progress'),
+            uploadBar: document.getElementById('upload-bar'),
+            uploadStatusText: document.getElementById('upload-status-text'),
+        });
+
+        // Wire up user PA card
+        const userPa = wireUpPaCard({
+            recordBtn: document.getElementById('record-btn-user'),
+            uploadBtn: document.getElementById('upload-supabase-btn-user'),
+            fileInput: document.getElementById('file-input-user'),
+            fileUploadBtn: document.getElementById('file-upload-btn-user'),
+            audioPreview: document.getElementById('audio-preview-user'),
+            paStatus: document.getElementById('pa-status-user'),
+            uploadProgress: document.getElementById('upload-progress-user'),
+            uploadBar: document.getElementById('upload-bar-user'),
+            uploadStatusText: document.getElementById('upload-status-text-user'),
+        });
+
+        let recordingsInterval;
+
+
+
+        // --- Recordings Table (Admin) ---
+        async function loadRecordings() {
+            const tbody = document.getElementById('recordings-tbody');
+            if (!tbody) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('recordings')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="recordings-empty">Failed to load recordings</td></tr>';
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="recordings-empty">No recordings yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(rec => {
+                    const date = new Date(rec.created_at);
+                    const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const timeStr = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                    const statusClass = rec.downloaded ? 'played' : 'pending';
+                    const statusText = rec.downloaded ? 'Played' : 'Pending';
+
+                    return `<tr>
+                        <td>${rec.filename}</td>
+                        <td>${rec.uploaded_by}</td>
+                        <td>${dateStr}, ${timeStr}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    </tr>`;
+                }).join('');
+
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" class="recordings-empty">Error loading recordings</td></tr>';
+            }
+        }
+
+        // Refresh button
+        document.getElementById('refresh-recordings-btn')?.addEventListener('click', loadRecordings);
+
+        function startRecordingsPolling() {
+            loadRecordings();
+            recordingsInterval = setInterval(loadRecordings, 15000);
+        }
+
+        function stopRecordingsPolling() {
+            clearInterval(recordingsInterval);
+        }
+
+        // --- Authentication ---
+        // Users are embedded here so login works on GitHub Pages, locally, and on the RPi
+        const USERS = [
+            { username: "shreerang", password: "vvs@26",  display_name: "Shreerang", role: "admin" },
+            { username: "kartik",    password: "pass123", display_name: "Kartik",    role: "user"  }
+        ];
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+            errorDiv.textContent = "";
+
+            const usersData = { users: USERS };
+
+            const user = usersData.users.find(x => x.username === u && x.password === p);
+
+            if(user) {
+                showDashboard(user);
+            } else {
+                errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
+                document.getElementById('password').value = "";
+            }
+        }
+
+        function showDashboard(user) {
+            userDisplay.textContent = user.display_name;
+            roleBadge.textContent = user.role;
+            
+            // Adjust card visibility based on role
+            const adminCards = document.querySelectorAll('.admin-only');
+            
+            if (user.role === 'admin') {
+                adminCards.forEach(card => card.style.display = 'grid');
+                roleBadge.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+                roleBadge.style.color = '#3b82f6';
+                document.getElementById('pa-card-user').style.display = 'none';
+            } else {
+                // If user, hide admin cards, show user PA card
+                adminCards.forEach(card => card.style.display = 'none');
+                document.getElementById('pa-card-user').style.display = 'flex';
+                roleBadge.style.backgroundColor = 'rgba(16, 185, 129, 0.15)';
+                roleBadge.style.color = '#10b981';
+            }
+
+            const welcomeMsgHTML = `Welcome, <span>${user.display_name}</span>`;
+            greetingText.innerHTML = welcomeMsgHTML;
+            navGreeting.innerHTML = welcomeMsgHTML;
+            
+            loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                
+                greetingOverlay.style.opacity = '1';
+                setTimeout(() => {
+                    greetingText.classList.add('shrink');
+                    
+                    setTimeout(() => {
+                        greetingOverlay.style.display = 'none';
+                        navGreeting.style.opacity = '1';
+                    }, 1000);
+                    
+                    dashboardScreen.style.display = 'flex';
+                    void dashboardScreen.offsetWidth;
+                    dashboardScreen.style.opacity = '1';
+                    
+                    if (user.role === 'admin') {
+                        startRecordingsPolling();
+                    }
+                    
+                }, 2000);
+                
+            }, 500);
+        }
+
+        function handleLogout() {
+            stopRecordingsPolling();
+            adminPa.reset();
+            userPa.reset();
+            document.getElementById('pa-card-user').style.display = 'none';
+
+            dashboardScreen.style.opacity = '0';
+            navGreeting.style.opacity = '0';
+            greetingText.classList.remove('shrink');
+            document.getElementById('password').value = "";
+            errorDiv.textContent = "";
+
+            setTimeout(() => {
+                dashboardScreen.style.display = 'none';
+                greetingOverlay.style.display = 'flex';
+                greetingOverlay.style.opacity = '0';
+                
+                loginScreen.style.display = 'flex';
+                void loginScreen.offsetWidth;
+                loginScreen.style.opacity = '1';
+            }, 500);
+        }
+
+        // --- Event Listeners ---
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+
+    </script>
+</body>
+</html>
