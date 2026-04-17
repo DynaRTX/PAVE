@@ -684,7 +684,19 @@
                 paStatus.style.color = 'var(--primary-accent)';
                 recordBtn.disabled = true; uploadBtn.disabled = true; fileUploadBtn.disabled = true;
 
-                const storagePath = Date.now() + '_' + originalName;
+                const now = new Date();
+                const dStr = now.getFullYear().toString() + 
+                             String(now.getMonth()+1).padStart(2,'0') + 
+                             String(now.getDate()).padStart(2,'0') + '_' + 
+                             String(now.getHours()).padStart(2,'0') + 
+                             String(now.getMinutes()).padStart(2,'0') + 
+                             String(now.getSeconds()).padStart(2,'0');
+                
+                const initials = window.currentUserInitials || 'UNK';
+                let ext = originalName.includes('.') ? originalName.substring(originalName.lastIndexOf('.')) : '.webm';
+                let newFileName = `${initials}_${dStr}${ext}`;
+
+                const storagePath = newFileName;
                 const { error: storageError } = await supabaseClient.storage
                     .from('recordings').upload(storagePath, blob, { contentType: blob.type });
 
@@ -699,7 +711,7 @@
 
                 const userName = document.getElementById('user-display').textContent || 'unknown';
                 const { error: dbError } = await supabaseClient.from('recordings').insert({
-                    filename: originalName, uploaded_by: userName, storage_path: storagePath, downloaded: false
+                    filename: newFileName, uploaded_by: userName, storage_path: storagePath, downloaded: false
                 });
 
                 if (dbError) {
@@ -828,19 +840,26 @@
         }
 
         // --- Authentication ---
-        // Users are embedded here so login works on GitHub Pages, locally, and on the RPi
-        const USERS = [
-            { username: "shreerang", password: "vvs@26",  display_name: "Shreerang", role: "admin" },
-            { username: "kartik",    password: "pass123", display_name: "Kartik",    role: "user"  }
-        ];
-
         async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value;
             errorDiv.textContent = "";
 
-            const usersData = { users: USERS };
+            let usersData = null;
+            
+            try {
+                const res = await fetch('users.json');
+                if(res.ok) {
+                    usersData = await res.json();
+                } else {
+                    throw new Error("HTTP error " + res.status);
+                }
+            } catch (err) {
+                console.error("Fetch failed:", err);
+                errorDiv.textContent = "Error: Could not load user data. Check your connection.";
+                return;
+            }
 
             const user = usersData.users.find(x => x.username === u && x.password === p);
 
@@ -853,6 +872,7 @@
         }
 
         function showDashboard(user) {
+            window.currentUserInitials = user.initials || 'XX';
             userDisplay.textContent = user.display_name;
             roleBadge.textContent = user.role;
             

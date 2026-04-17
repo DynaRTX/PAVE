@@ -4,13 +4,15 @@
       "username": "shreerang",
       "password": "vvs@26",
       "display_name": "Shreerang",
-      "role": "admin"
+      "role": "admin",
+      "initials": "sk"
     },
     {
       "username": "kartik",
       "password": "pass123",
       "display_name": "Kartik",
-      "role": "user"
+      "role": "user",
+      "initials": "km"
     }
   ]
 }
