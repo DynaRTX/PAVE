@@ -1369,20 +1369,14 @@
             errorDiv.textContent = "Authenticating...";
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('pave_users')
-                    .select('username, password, display_name, role, initials')
-                    .eq('username', u)
-                    .single();
+                // Use dummy domain trick for username -> email mapping
+                const emailAlias = `${u.toLowerCase()}@pave.local`;
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: emailAlias,
+                    password: p
+                });
 
-                if (error || !data) {
-                    errorDiv.style.color = 'var(--danger-color)';
-                    errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
-                    document.getElementById('password').value = "";
-                    return;
-                }
-
-                if (data.password !== p) {
+                if (error || !data.user) {
                     errorDiv.style.color = 'var(--danger-color)';
                     errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
                     document.getElementById('password').value = "";
@@ -1391,7 +1385,7 @@
 
                 errorDiv.style.color = '';
                 errorDiv.textContent = "";
-                showDashboard(data);
+                showDashboard(data.user.user_metadata);
 
             } catch (err) {
                 console.error("Login error:", err);
@@ -1452,7 +1446,8 @@
             }, 500);
         }
 
-        function handleLogout() {
+        async function handleLogout() {
+            try { await supabaseClient.auth.signOut(); } catch(e) {}
             stopRecordingsPolling();
             adminPa.reset();
             userPa.reset();
