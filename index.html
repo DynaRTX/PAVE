@@ -531,7 +531,28 @@
         .refresh-btn:hover {
             border-color: var(--text-main);
             color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--btn-hover-bg);
+        }
+
+        /* Scheduler CSS */
+        .day-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background: var(--input-bg-default);
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .day-checkbox:hover {
+            background: var(--input-bg-focus);
+        }
+        .day-checkbox input {
+            cursor: pointer;
         }
 
         @media (max-width: 768px) {
@@ -574,6 +595,26 @@
 
     <!-- Login Screen -->
     <div id="login-screen">
+        <button class="theme-toggle" aria-label="Toggle Theme" style="position: absolute; top: 20px; right: 20px;">
+            <!-- Sun icon shown in light mode -->
+            <svg class="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" x2="12" y1="1" y2="3" />
+                <line x1="12" x2="12" y1="21" y2="23" />
+                <line x1="4.22" x2="5.64" y1="4.22" y2="5.64" />
+                <line x1="18.36" x2="19.78" y1="18.36" y2="19.78" />
+                <line x1="1" x2="3" y1="12" y2="12" />
+                <line x1="21" x2="23" y1="12" y2="12" />
+                <line x1="4.22" x2="5.64" y1="19.78" y2="18.36" />
+                <line x1="18.36" x2="19.78" y1="5.64" y2="4.22" />
+            </svg>
+            <!-- Moon icon shown in dark mode -->
+            <svg class="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+        </button>
         <div class="login-container glass-card">
             <h1 class="login-title">Vidya Valley PAVE</h1>
             <form id="login-form">
@@ -602,9 +643,9 @@
             <div class="nav-brand">Vidya Valley PAVE</div>
             <div class="nav-center" id="nav-greeting"></div>
             <div class="nav-right">
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                <button class="theme-toggle" aria-label="Toggle Theme">
                     <!-- Sun icon shown in light mode -->
-                    <svg id="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24"
+                    <svg class="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="5" />
                         <line x1="12" x2="12" y1="1" y2="3" />
@@ -617,7 +658,7 @@
                         <line x1="18.36" x2="19.78" y1="5.64" y2="4.22" />
                     </svg>
                     <!-- Moon icon shown in dark mode -->
-                    <svg id="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24"
+                    <svg class="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                     </svg>
@@ -724,6 +765,91 @@
                 </div>
             </div>
 
+            <!-- Scheduler Card (admin only) -->
+            <div class="dash-card glass-card admin-only" id="scheduler-card" style="grid-column: 1 / -1; width: 100%; max-width: none;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; width: 100%;">
+                    <h3 class="card-title" style="margin-bottom:0;">Schedule Audio</h3>
+                    <button class="refresh-btn" id="refresh-schedules-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                            <path d="M21 2v6h-6" />
+                            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                            <path d="M3 22v-6h6" />
+                            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                        </svg>
+                        Refresh
+                    </button>
+                    <div id="schedule-status" style="margin-left:auto; font-size: 0.85rem; font-weight: 600;"></div>
+                </div>
+                
+                <div style="background: var(--input-bg-default); padding: 20px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+                        <!-- File Input -->
+                        <div style="flex: 1; min-width: 250px;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">AUDIO FILE</label>
+                            <input type="file" id="schedule-file-input" accept="audio/*" style="display:none;">
+                            <button class="pa-btn" id="schedule-file-btn" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-main); height: 44px; margin-bottom: 0;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" x2="12" y1="3" y2="15" />
+                                </svg>
+                                <span id="schedule-filename">SELECT AUDIO FILE</span>
+                            </button>
+                        </div>
+
+                        <!-- Time Input -->
+                        <div style="width: 140px;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">TIME</label>
+                            <input type="time" id="schedule-time" class="input-field" style="width: 100%; height: 44px; margin-bottom: 0; padding-top: 10px; padding-bottom: 10px;">
+                        </div>
+
+                        <!-- Days Input -->
+                        <div style="flex: 2; min-width: 350px;">
+                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">DAYS TO PLAY</label>
+                            <div class="schedule-days-grid" style="display: flex; flex-wrap: wrap; gap: 8px; height: 44px; align-items: center;">
+                                <label class="day-checkbox"><input type="checkbox" value="Mon"> Mon</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Tue"> Tue</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Wed"> Wed</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Thu"> Thu</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Fri"> Fri</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Sat"> Sat</label>
+                                <label class="day-checkbox"><input type="checkbox" value="Sun"> Sun</label>
+                            </div>
+                        </div>
+
+                        <!-- Add Button -->
+                        <div>
+                            <button class="pa-btn" id="submit-schedule-btn" style="background: var(--success-color); height: 44px; margin-bottom: 0; padding: 0 24px; width: auto;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; vertical-align: middle;">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                ADD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recordings-table-wrap" style="width: 100%;">
+                    <table class="recordings-table">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Time</th>
+                                <th>Days</th>
+                                <th>Created By</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedules-tbody">
+                            <tr>
+                                <td colspan="5" class="recordings-empty">Loading schedules...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- PA System Card (user-only, no recording log) -->
             <div class="dash-card glass-card" id="pa-card-user" style="display:none;">
                 <h3 class="card-title">PA System Control</h3>
@@ -779,31 +905,29 @@
 
     <script>
         // --- Theme Management ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIconLight = document.getElementById('theme-icon-light');
-        const themeIconDark = document.getElementById('theme-icon-dark');
+        const themeToggleBtns = document.querySelectorAll('.theme-toggle');
 
-        themeToggleBtn.addEventListener('click', () => {
+        themeToggleBtns.forEach(btn => btn.addEventListener('click', () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             if (isDark) {
                 document.documentElement.removeAttribute('data-theme');
-                themeIconLight.style.display = 'none';
-                themeIconDark.style.display = 'block';
+                document.querySelectorAll('.theme-icon-light').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.theme-icon-dark').forEach(el => el.style.display = 'block');
                 localStorage.setItem('pave-theme', 'light');
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                themeIconLight.style.display = 'block';
-                themeIconDark.style.display = 'none';
+                document.querySelectorAll('.theme-icon-light').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.theme-icon-dark').forEach(el => el.style.display = 'none');
                 localStorage.setItem('pave-theme', 'dark');
             }
-        });
+        }));
 
         // Initialize based on localStorage
         const savedTheme = localStorage.getItem('pave-theme') || 'light';
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
-            themeIconLight.style.display = 'block';
-            themeIconDark.style.display = 'none';
+            document.querySelectorAll('.theme-icon-light').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.theme-icon-dark').forEach(el => el.style.display = 'none');
         }
 
         // --- Initialization and Elements ---
@@ -977,7 +1101,12 @@
 
             return {
                 reset() {
-                    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+                    if (isRecording) {
+                        isRecording = false;
+                        if (scriptProcessor) { scriptProcessor.disconnect(); scriptProcessor = null; }
+                        if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+                        if (audioContext) { audioContext.close(); audioContext = null; }
+                    }
                     recordBtn.classList.remove('active');
                     recordBtn.innerHTML = `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
@@ -1073,37 +1202,203 @@
             clearInterval(recordingsInterval);
         }
 
+        // --- Scheduler Logic ---
+        const scheduleFileInput = document.getElementById('schedule-file-input');
+        const scheduleFileBtn = document.getElementById('schedule-file-btn');
+        const scheduleFilename = document.getElementById('schedule-filename');
+        const submitScheduleBtn = document.getElementById('submit-schedule-btn');
+        const scheduleStatus = document.getElementById('schedule-status');
+        let selectedScheduleFile = null;
+
+        if (scheduleFileBtn && scheduleFileInput) {
+            scheduleFileBtn.addEventListener('click', () => scheduleFileInput.click());
+            scheduleFileInput.addEventListener('change', (e) => {
+                const f = e.target.files[0];
+                if (f) {
+                    selectedScheduleFile = f;
+                    scheduleFilename.textContent = f.name.length > 20 ? f.name.substring(0, 17) + '...' : f.name;
+                }
+            });
+        }
+
+        if (submitScheduleBtn) {
+            submitScheduleBtn.addEventListener('click', async () => {
+                if (!selectedScheduleFile) {
+                    scheduleStatus.textContent = 'Please select an audio file first.';
+                    scheduleStatus.style.color = 'var(--danger-color)';
+                    return;
+                }
+                
+                const timeStr = document.getElementById('schedule-time').value; // HH:mm
+                if (!timeStr) {
+                    scheduleStatus.textContent = 'Please select a time.';
+                    scheduleStatus.style.color = 'var(--danger-color)';
+                    return;
+                }
+
+                // Get checked days
+                const checkedBoxes = Array.from(document.querySelectorAll('.day-checkbox input:checked'));
+                const days = checkedBoxes.map(cb => cb.value); // e.g. ["Mon", "Tue"]
+                if (days.length === 0) {
+                    scheduleStatus.textContent = 'Please select at least one day.';
+                    scheduleStatus.style.color = 'var(--danger-color)';
+                    return;
+                }
+
+                submitScheduleBtn.disabled = true;
+                scheduleStatus.textContent = 'Uploading to cloud...';
+                scheduleStatus.style.color = 'var(--primary-accent)';
+
+                const initials = window.currentUserInitials || 'UNK';
+                const dStr = Date.now().toString();
+                let ext = selectedScheduleFile.name.includes('.') ? selectedScheduleFile.name.substring(selectedScheduleFile.name.lastIndexOf('.')) : '.mp3';
+                let storagePath = `scheduled_${initials}_${dStr}${ext}`;
+
+                // Upload to supabase storage 'recordings' bucket
+                const { error: storageError } = await supabaseClient.storage
+                    .from('recordings').upload(storagePath, selectedScheduleFile, { contentType: selectedScheduleFile.type });
+
+                if (storageError) {
+                    scheduleStatus.textContent = 'Upload failed: ' + storageError.message;
+                    scheduleStatus.style.color = 'var(--danger-color)';
+                    submitScheduleBtn.disabled = false;
+                    return;
+                }
+
+                scheduleStatus.textContent = 'Saving schedule...';
+                const userName = document.getElementById('user-display').textContent || 'unknown';
+                
+                const { error: dbError } = await supabaseClient.from('pave_schedules').insert({
+                    filename: selectedScheduleFile.name,
+                    storage_path: storagePath,
+                    days: days,
+                    time_play: timeStr,
+                    scheduled_by: userName,
+                    active: true
+                });
+
+                if (dbError) {
+                    scheduleStatus.textContent = 'Database error: ' + dbError.message;
+                    scheduleStatus.style.color = 'var(--danger-color)';
+                } else {
+                    scheduleStatus.textContent = 'Scheduled successfully! \u2713';
+                    scheduleStatus.style.color = 'var(--success-color)';
+                    // Reset form
+                    selectedScheduleFile = null;
+                    scheduleFilename.textContent = 'SELECT AUDIO FILE';
+                    document.getElementById('schedule-time').value = '';
+                    document.querySelectorAll('.day-checkbox input').forEach(cb => cb.checked = false);
+                    setTimeout(() => {
+                        scheduleStatus.textContent = '';
+                        loadSchedules();
+                    }, 2000);
+                }
+                submitScheduleBtn.disabled = false;
+            });
+        }
+
+        async function loadSchedules() {
+            const tbody = document.getElementById('schedules-tbody');
+            if (!tbody) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('pave_schedules')
+                    .select('*')
+                    .order('time_play', { ascending: true });
+
+                if (error) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="recordings-empty">Failed to load schedules</td></tr>';
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="recordings-empty">No active schedules</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(sch => {
+                    const daysStr = sch.days.join(', ');
+
+                    return `<tr>
+                        <td>${sch.filename}</td>
+                        <td>${sch.time_play}</td>
+                        <td style="font-size: 0.85rem;">${daysStr}</td>
+                        <td>${sch.scheduled_by}</td>
+                        <td style="text-align: right;">
+                            <button class="logout-btn" style="padding: 4px 8px; font-size: 0.8rem; border-color: var(--danger-color); color: var(--danger-color);" onclick="deleteSchedule('${sch.id}', '${sch.storage_path}')">Delete</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" class="recordings-empty">Error loading schedules</td></tr>';
+            }
+        }
+
+        window.deleteSchedule = async function(id, storagePath) {
+            if(!confirm('Are you sure you want to delete this schedule?')) return;
+            try {
+                // Delete from DB first
+                const { error: dbError } = await supabaseClient.from('pave_schedules').delete().eq('id', id);
+                if (dbError) {
+                    alert("Error deleting from database. Have you run the SQL for DELETE policy? Details: " + dbError.message);
+                    return;
+                }
+                
+                // Then try to clean up storage
+                if (storagePath) {
+                    await supabaseClient.storage.from('recordings').remove([storagePath]);
+                }
+                
+                loadSchedules();
+            } catch(e) { 
+                console.error('Failed to delete schedule', e); 
+                alert("Failed to delete: " + e.message);
+            }
+        };
+
+        document.getElementById('refresh-schedules-btn')?.addEventListener('click', loadSchedules);
+
         // --- Authentication ---
         async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value;
-            errorDiv.textContent = "";
-
-            let usersData = null;
+            errorDiv.style.color = 'var(--warning-color)';
+            errorDiv.textContent = "Authenticating...";
 
             try {
-                const res = await fetch('users.json');
-                if (res.ok) {
-                    usersData = await res.json();
-                } else {
-                    throw new Error("HTTP error " + res.status);
+                const { data, error } = await supabaseClient
+                    .from('pave_users')
+                    .select('username, password, display_name, role, initials')
+                    .eq('username', u)
+                    .single();
+
+                if (error || !data) {
+                    errorDiv.style.color = 'var(--danger-color)';
+                    errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
+                    document.getElementById('password').value = "";
+                    return;
                 }
+
+                if (data.password !== p) {
+                    errorDiv.style.color = 'var(--danger-color)';
+                    errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
+                    document.getElementById('password').value = "";
+                    return;
+                }
+
+                errorDiv.style.color = '';
+                errorDiv.textContent = "";
+                showDashboard(data);
+
             } catch (err) {
-                console.error("Fetch failed:", err);
-                errorDiv.textContent = "Error: Could not load user data. Check your connection.";
-                return;
-            }
-
-            const user = usersData.users.find(x => x.username === u && x.password === p);
-
-            if (user) {
-                showDashboard(user);
-            } else {
-                errorDiv.textContent = "ACCESS DENIED: Invalid credentials.";
-                document.getElementById('password').value = "";
+                console.error("Login error:", err);
+                errorDiv.textContent = "Error: Could not connect. Check your connection.";
             }
         }
+
 
         function showDashboard(user) {
             window.currentUserInitials = user.initials || 'XX';
@@ -1118,6 +1413,7 @@
                 roleBadge.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
                 roleBadge.style.color = '#3b82f6';
                 document.getElementById('pa-card-user').style.display = 'none';
+                loadSchedules();
             } else {
                 // If user, hide admin cards, show user PA card
                 adminCards.forEach(card => card.style.display = 'none');
