@@ -549,9 +549,11 @@
             transition: background 0.2s;
             user-select: none;
         }
+
         .day-checkbox:hover {
             background: var(--input-bg-focus);
         }
+
         .day-checkbox input {
             cursor: pointer;
         }
@@ -598,8 +600,8 @@
     <div id="login-screen">
         <button class="theme-toggle" aria-label="Toggle Theme" style="position: absolute; top: 20px; right: 20px;">
             <!-- Sun icon shown in light mode -->
-            <svg class="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="theme-icon-light" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" x2="12" y1="1" y2="3" />
                 <line x1="12" x2="12" y1="21" y2="23" />
@@ -611,8 +613,8 @@
                 <line x1="18.36" x2="19.78" y1="5.64" y2="4.22" />
             </svg>
             <!-- Moon icon shown in dark mode -->
-            <svg class="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="theme-icon-dark" style="display:block;" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
         </button>
@@ -636,6 +638,37 @@
     <!-- Greeting Overlay -->
     <div id="greeting-overlay">
         <h1 class="greeting-text" id="greeting-text"></h1>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="pw-reset-modal"
+        style="display:none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.7); z-index: 1000; justify-content:center; align-items:center;">
+        <div class="glass-card"
+            style="padding: 24px; width: 90%; max-width: 400px; display: flex; flex-direction: column;">
+            <h3 class="card-title" style="margin-bottom: 20px;">Change Password</h3>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">OLD
+                    PASSWORD</label>
+                <input type="password" id="pw-old" class="input-field">
+            </div>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">NEW
+                    PASSWORD</label>
+                <input type="password" id="pw-new" class="input-field">
+            </div>
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">CONFIRM
+                    NEW PASSWORD</label>
+                <input type="password" id="pw-confirm" class="input-field">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="logout-btn" id="pw-cancel-btn" style="flex: 1;">Cancel</button>
+                <button class="pa-btn" id="pw-submit-btn"
+                    style="flex: 1; padding: 12px; margin-top: 0; min-height: 44px;">Save</button>
+            </div>
+            <div id="pw-error"
+                style="color: var(--danger-color); font-size: 0.85rem; margin-top: 15px; text-align: center;"></div>
+        </div>
     </div>
 
     <!-- Dashboard Screen -->
@@ -664,9 +697,14 @@
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                     </svg>
                 </button>
-                <div class="user-display">
-                    <span id="user-display"></span>
-                    <span id="role-badge" class="role-badge"></span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                    <div class="user-display">
+                        <span id="user-display"></span>
+                        <span id="role-badge" class="role-badge"></span>
+                    </div>
+                    <button id="nav-reset-pw-btn"
+                        style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 4px;">Change
+                        Password</button>
                 </div>
                 <button class="logout-btn" id="logout-btn">DISCONNECT</button>
             </div>
@@ -767,11 +805,15 @@
             </div>
 
             <!-- Scheduler Card (admin only) -->
-            <div class="dash-card glass-card admin-only" id="scheduler-card" style="grid-column: 1 / -1; width: 100%; max-width: none; align-items: flex-start;">
-                <div style="display:flex; align-items:center; flex-wrap: wrap; gap:12px; margin-bottom:20px; width: 100%;">
-                    <h3 class="card-title" style="margin-bottom:0; flex-shrink: 0; min-width: fit-content;">Schedule Audio</h3>
+            <div class="dash-card glass-card admin-only" id="scheduler-card"
+                style="grid-column: 1 / -1; width: 100%; max-width: none; align-items: flex-start;">
+                <div
+                    style="display:flex; align-items:center; flex-wrap: wrap; gap:12px; margin-bottom:20px; width: 100%;">
+                    <h3 class="card-title" style="margin-bottom:0; flex-shrink: 0; min-width: fit-content;">Schedule
+                        Audio</h3>
                     <button class="refresh-btn" id="refresh-schedules-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="vertical-align:middle; margin-right:4px;">
                             <path d="M21 2v6h-6" />
                             <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
                             <path d="M3 22v-6h6" />
@@ -781,15 +823,20 @@
                     </button>
                     <div id="schedule-status" style="margin-left:auto; font-size: 0.85rem; font-weight: 600;"></div>
                 </div>
-                
-                <div style="background: var(--input-bg-default); padding: 20px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
+
+                <div
+                    style="background: var(--input-bg-default); padding: 20px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
                     <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
                         <!-- File Input -->
                         <div style="flex: 1; min-width: 250px;">
-                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">AUDIO FILE</label>
+                            <label
+                                style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">AUDIO
+                                FILE</label>
                             <input type="file" id="schedule-file-input" accept="audio/*" style="display:none;">
-                            <button class="pa-btn" id="schedule-file-btn" style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-main); height: 44px; margin-bottom: 0;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
+                            <button class="pa-btn" id="schedule-file-btn"
+                                style="background: transparent; border: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-main); height: 44px; margin-bottom: 0;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right:8px;">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                     <polyline points="17 8 12 3 7 8" />
                                     <line x1="12" x2="12" y1="3" y2="15" />
@@ -800,14 +847,19 @@
 
                         <!-- Time Input -->
                         <div style="width: 140px;">
-                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">TIME</label>
-                            <input type="time" id="schedule-time" class="input-field" style="width: 100%; height: 44px; margin-bottom: 0; padding-top: 10px; padding-bottom: 10px;">
+                            <label
+                                style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">TIME</label>
+                            <input type="time" id="schedule-time" class="input-field"
+                                style="width: 100%; height: 44px; margin-bottom: 0; padding-top: 10px; padding-bottom: 10px;">
                         </div>
 
                         <!-- Days Input -->
                         <div style="flex: 2; min-width: 350px;">
-                            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">DAYS TO PLAY</label>
-                            <div class="schedule-days-grid" style="display: flex; flex-wrap: wrap; gap: 8px; height: 44px; align-items: center;">
+                            <label
+                                style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">DAYS
+                                TO PLAY</label>
+                            <div class="schedule-days-grid"
+                                style="display: flex; flex-wrap: wrap; gap: 8px; height: 44px; align-items: center;">
                                 <label class="day-checkbox"><input type="checkbox" value="Mon"> Mon</label>
                                 <label class="day-checkbox"><input type="checkbox" value="Tue"> Tue</label>
                                 <label class="day-checkbox"><input type="checkbox" value="Wed"> Wed</label>
@@ -820,8 +872,10 @@
 
                         <!-- Add Button -->
                         <div>
-                            <button class="pa-btn" id="submit-schedule-btn" style="background: var(--success-color); height: 44px; margin-bottom: 0; padding: 0 24px; width: auto;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; vertical-align: middle;">
+                            <button class="pa-btn" id="submit-schedule-btn"
+                                style="background: var(--success-color); height: 44px; margin-bottom: 0; padding: 0 24px; width: auto;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right:8px; vertical-align: middle;">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
@@ -1229,7 +1283,7 @@
                     scheduleStatus.style.color = 'var(--danger-color)';
                     return;
                 }
-                
+
                 const timeStr = document.getElementById('schedule-time').value; // HH:mm
                 if (!timeStr) {
                     scheduleStatus.textContent = 'Please select a time.';
@@ -1268,7 +1322,7 @@
 
                 scheduleStatus.textContent = 'Saving schedule...';
                 const userName = document.getElementById('user-display').textContent || 'unknown';
-                
+
                 const { error: dbError } = await supabaseClient.from('pave_schedules').insert({
                     filename: selectedScheduleFile.name,
                     storage_path: storagePath,
@@ -1337,8 +1391,8 @@
             }
         }
 
-        window.deleteSchedule = async function(id, storagePath) {
-            if(!confirm('Are you sure you want to delete this schedule?')) return;
+        window.deleteSchedule = async function (id, storagePath) {
+            if (!confirm('Are you sure you want to delete this schedule?')) return;
             try {
                 // Delete from DB first
                 const { error: dbError } = await supabaseClient.from('pave_schedules').delete().eq('id', id);
@@ -1346,15 +1400,15 @@
                     alert("Error deleting from database. Have you run the SQL for DELETE policy? Details: " + dbError.message);
                     return;
                 }
-                
+
                 // Then try to clean up storage
                 if (storagePath) {
                     await supabaseClient.storage.from('recordings').remove([storagePath]);
                 }
-                
+
                 loadSchedules();
-            } catch(e) { 
-                console.error('Failed to delete schedule', e); 
+            } catch (e) {
+                console.error('Failed to delete schedule', e);
                 alert("Failed to delete: " + e.message);
             }
         };
@@ -1371,7 +1425,8 @@
 
             try {
                 // Use dummy domain trick for username -> email mapping
-                const emailAlias = `${u.toLowerCase()}@pave.local`;
+                window.currentUsername = u.toLowerCase();
+                const emailAlias = `${window.currentUsername}@pave.local`;
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: emailAlias,
                     password: p
@@ -1448,7 +1503,7 @@
         }
 
         async function handleLogout() {
-            try { await supabaseClient.auth.signOut(); } catch(e) {}
+            try { await supabaseClient.auth.signOut(); } catch (e) { }
             stopRecordingsPolling();
             adminPa.reset();
             userPa.reset();
@@ -1470,6 +1525,82 @@
                 loginScreen.style.opacity = '1';
             }, 500);
         }
+
+        // --- Password Reset ---
+        const pwModal = document.getElementById('pw-reset-modal');
+        document.getElementById('nav-reset-pw-btn')?.addEventListener('click', () => {
+            pwModal.style.display = 'flex';
+            document.getElementById('pw-old').value = '';
+            document.getElementById('pw-new').value = '';
+            document.getElementById('pw-confirm').value = '';
+            document.getElementById('pw-error').textContent = '';
+        });
+
+        document.getElementById('pw-cancel-btn')?.addEventListener('click', () => {
+            pwModal.style.display = 'none';
+        });
+
+        document.getElementById('pw-submit-btn')?.addEventListener('click', async () => {
+            const oldPw = document.getElementById('pw-old').value;
+            const newPw = document.getElementById('pw-new').value;
+            const confirmPw = document.getElementById('pw-confirm').value;
+            const errDiv = document.getElementById('pw-error');
+
+            if (!oldPw || !newPw || !confirmPw) {
+                errDiv.textContent = 'Please fill all fields.';
+                return;
+            }
+            if (newPw !== confirmPw) {
+                errDiv.textContent = 'New passwords do not match.';
+                return;
+            }
+            if (newPw.length < 6) {
+                errDiv.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            errDiv.style.color = 'var(--text-main)';
+            errDiv.textContent = 'Verifying...';
+
+            try {
+                const emailAlias = `${window.currentUsername}@pave.local`;
+                // Verify old password by attempting re-login
+                const { error: verifyError } = await supabaseClient.auth.signInWithPassword({
+                    email: emailAlias,
+                    password: oldPw
+                });
+
+                if (verifyError) {
+                    errDiv.style.color = 'var(--danger-color)';
+                    errDiv.textContent = 'Old password is incorrect.';
+                    return;
+                }
+
+                errDiv.textContent = 'Updating password...';
+
+                // Update to new password
+                const { error: updateError } = await supabaseClient.auth.updateUser({
+                    password: newPw
+                });
+
+                if (updateError) {
+                    errDiv.style.color = 'var(--danger-color)';
+                    errDiv.textContent = updateError.message;
+                    return;
+                }
+
+                errDiv.style.color = 'var(--success-color)';
+                errDiv.textContent = 'Password updated successfully!';
+
+                setTimeout(() => {
+                    pwModal.style.display = 'none';
+                }, 1500);
+
+            } catch (err) {
+                errDiv.style.color = 'var(--danger-color)';
+                errDiv.textContent = 'Connection error.';
+            }
+        });
 
         // --- Event Listeners ---
         loginForm.addEventListener('submit', handleLogin);
