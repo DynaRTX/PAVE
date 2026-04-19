@@ -483,6 +483,7 @@
             color: var(--text-main);
             border-bottom: 1px solid var(--table-border);
             white-space: nowrap;
+            text-align: left;
         }
 
         .recordings-table tbody tr:hover {
@@ -766,9 +767,9 @@
             </div>
 
             <!-- Scheduler Card (admin only) -->
-            <div class="dash-card glass-card admin-only" id="scheduler-card" style="grid-column: 1 / -1; width: 100%; max-width: none;">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; width: 100%;">
-                    <h3 class="card-title" style="margin-bottom:0;">Schedule Audio</h3>
+            <div class="dash-card glass-card admin-only" id="scheduler-card" style="grid-column: 1 / -1; width: 100%; max-width: none; align-items: flex-start;">
+                <div style="display:flex; align-items:center; flex-wrap: wrap; gap:12px; margin-bottom:20px; width: 100%;">
+                    <h3 class="card-title" style="margin-bottom:0; flex-shrink: 0; min-width: fit-content;">Schedule Audio</h3>
                     <button class="refresh-btn" id="refresh-schedules-btn">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
                             <path d="M21 2v6h-6" />
@@ -834,10 +835,10 @@
                     <table class="recordings-table">
                         <thead>
                             <tr>
-                                <th>File</th>
-                                <th>Time</th>
-                                <th>Days</th>
-                                <th>Created By</th>
+                                <th style="text-align: left;">File</th>
+                                <th style="text-align: left;">Time</th>
+                                <th style="text-align: left;">Days</th>
+                                <th style="text-align: left;">Created By</th>
                                 <th style="text-align: right;">Action</th>
                             </tr>
                         </thead>
