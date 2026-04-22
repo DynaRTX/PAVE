@@ -710,6 +710,24 @@
             </div>
         </nav>
 
+        <!-- Now Playing Banner -->
+        <div id="now-playing-banner" style="display: none; align-items: center; justify-content: space-between; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary-accent); padding: 12px 24px; border-radius: 8px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="pa-icon-container" style="width: 40px; height: 40px; margin-bottom: 0; animation: pulse-red 2s infinite; background: rgba(239, 68, 68, 0.1); color: var(--danger-color);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 1.1rem; font-family: 'Rajdhani', sans-serif;">SYSTEM ACTIVE</div>
+                    <div id="now-playing-text" style="color: var(--text-muted); font-size: 0.9rem;"></div>
+                </div>
+            </div>
+            <button id="stop-playback-btn" class="pa-btn" style="width: auto; height: 40px; margin-bottom: 0; background: var(--danger-color); padding: 0 20px; display: none;">STOP AUDIO</button>
+        </div>
+
         <div class="dashboard-grid">
 
             <!-- Admin: PA card + Recording Log side by side -->
@@ -1257,6 +1275,64 @@
             clearInterval(recordingsInterval);
         }
 
+        // --- System State Polling & Queue UI ---
+        let systemStateIntervalId = null;
+
+        function startSystemStatePolling() {
+            systemStateIntervalId = setInterval(fetchSystemState, 2000);
+            fetchSystemState();
+        }
+
+        function stopSystemStatePolling() {
+            if (systemStateIntervalId) { clearInterval(systemStateIntervalId); systemStateIntervalId = null; }
+        }
+
+        async function stopCurrentPlayback() {
+            if(!confirm("Force stop playing on PA system?")) return;
+            await supabaseClient.from('pave_system_state').update({ stop_requested: true }).eq('id', 1);
+            fetchSystemState(); // Immediate UI update
+        }
+
+        document.getElementById('stop-playback-btn')?.addEventListener('click', stopCurrentPlayback);
+
+        async function fetchSystemState() {
+            try {
+                const { data, error } = await supabaseClient.from('pave_system_state').select('*').eq('id', 1).single();
+                if (data && !error) {
+                    const banner = document.getElementById('now-playing-banner');
+                    const textEl = document.getElementById('now-playing-text');
+                    const btn1 = document.getElementById('upload-supabase-btn');
+                    const btn2 = document.getElementById('upload-supabase-btn-user');
+                    const stopBtn = document.getElementById('stop-playback-btn');
+                    
+                    if (data.is_playing) {
+                        if(banner) banner.style.display = 'flex';
+                        let typeStr = data.now_playing_type === 'schedule' ? 'Scheduled Audio' : 'Announcement';
+                        if(textEl) textEl.innerHTML = `<strong>${typeStr}</strong> playing by <em>${data.now_playing_by}</em><br>${data.now_playing_name}`;
+                        
+                        const currentRole = document.getElementById('role-badge').textContent;
+                        const currentName = document.getElementById('user-display').textContent;
+                        
+                        if (stopBtn) {
+                            if (currentRole === 'admin' || currentName === data.now_playing_by) {
+                                stopBtn.style.display = 'block';
+                            } else {
+                                stopBtn.style.display = 'none';
+                            }
+                        }
+                        
+                        if (btn1 && btn1.innerHTML.includes('PLAY ON PA SYSTEM')) btn1.innerHTML = btn1.innerHTML.replace('PLAY ON PA SYSTEM', 'PLAY NEXT ON PA SYSTEM');
+                        if (btn2 && btn2.innerHTML.includes('PLAY ON PA SYSTEM')) btn2.innerHTML = btn2.innerHTML.replace('PLAY ON PA SYSTEM', 'PLAY NEXT ON PA SYSTEM');
+                    } else {
+                        if(banner) banner.style.display = 'none';
+                        if(stopBtn) stopBtn.style.display = 'none';
+                        if (btn1 && btn1.innerHTML.includes('PLAY NEXT ON PA SYSTEM')) btn1.innerHTML = btn1.innerHTML.replace('PLAY NEXT ON PA SYSTEM', 'PLAY ON PA SYSTEM');
+                        if (btn2 && btn2.innerHTML.includes('PLAY NEXT ON PA SYSTEM')) btn2.innerHTML = btn2.innerHTML.replace('PLAY NEXT ON PA SYSTEM', 'PLAY ON PA SYSTEM');
+                    }
+                }
+            } catch(e) {}
+        }
+
         // --- Scheduler Logic ---
         const scheduleFileInput = document.getElementById('schedule-file-input');
         const scheduleFileBtn = document.getElementById('schedule-file-btn');
@@ -1496,6 +1572,7 @@
                     if (user.role === 'admin') {
                         startRecordingsPolling();
                     }
+                    startSystemStatePolling();
 
                 }, 2000);
 
@@ -1505,6 +1582,7 @@
         async function handleLogout() {
             try { await supabaseClient.auth.signOut(); } catch (e) { }
             stopRecordingsPolling();
+            stopSystemStatePolling();
             adminPa.reset();
             userPa.reset();
             document.getElementById('pa-card-user').style.display = 'none';
